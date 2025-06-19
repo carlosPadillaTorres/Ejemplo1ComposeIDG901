@@ -6,11 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,7 +23,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.toLowerCase
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -50,7 +63,8 @@ class MainActivity : ComponentActivity() {
         //enableEdgeToEdge()
         setContent {
             EjemploComposeIDGS901Theme {
-                saludoCard("Android","personake")
+                //saludoCard("Android","personake")
+                Tarjeta(tarjetas)
             }
         }
     }
@@ -59,8 +73,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Tarjeta(personajes: List<PersonajeTarjeta>){
     LazyColumn {
-        items (personajes) {personaje ->
-            MyPersonaje(personaje)
+        items(personajes) { personaje ->
+            MyPersonajes(personaje)
         }
     }
 }
@@ -68,21 +82,89 @@ fun Tarjeta(personajes: List<PersonajeTarjeta>){
 @Composable
 fun MyPersonaje(personaje: PersonajeTarjeta){
     Row{
-        ImagenPersonaje(personaje.title.toLowerCase())
+        imagenHeroe(personaje.title.toLowerCase())
         InfoPersonaje(personaje)
     }
 }
+
+@Composable
+fun MyPersonajes(personaje: PersonajeTarjeta){
+    Card(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        elevation =  CardDefaults.cardElevation(defaultElevation = 8.dp),
+        shape = RoundedCornerShape(46.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(8.dp)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            ImagenPersonaje(personaje.title)
+            Personajes(personaje)
+        }
+    }
+}
+
+@Composable
+fun Personaje(name: String, color: Color, style: TextStyle, lines: Int=Int.MAX_VALUE) {
+    Text(text = name, color = color, style = style, maxLines = lines)
+}
+
+@Composable
+fun Personajes(personaje: PersonajeTarjeta) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .clickable {
+                expanded = !expanded
+            }
+    ) {
+        Personaje(personaje.title,
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.typography.headlineMedium)
+
+        Personaje(personaje.body,
+            MaterialTheme.colorScheme.onBackground,
+            MaterialTheme.typography.bodyLarge,
+            if (expanded) Int.MAX_VALUE else 1)
+    }
+}
+
+@Composable
+fun imagenHeroe(imageName: String) {
+    val context = LocalContext.current
+    println("Image Name:"+imageName)
+    val imageResId = remember(imageName) {
+        context.resources.getIdentifier(imageName.toLowerCase(), "drawable", context.packageName)
+    }
+    Image(
+        painter = painterResource(id=imageResId),
+        contentDescription = null,
+        modifier = Modifier
+            .padding(16.dp)
+            .size(100.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.tertiary)
+    )
+}
+
 @Composable
 fun ImagenPersonaje(nombre: String){
     Image(
         painter = painterResource(id=R.drawable.dodoria),
         contentDescription="Android Logo",
-        modifier = Modifier.padding(10.dp)
+        modifier = Modifier
+            .padding(10.dp)
             .size(100.dp)
             .clip(MaterialTheme.shapes.small)
             .background(MaterialTheme.colorScheme.primary)
     )
 }
+
 @Composable
 fun InfoPersonaje(personaje: PersonajeTarjeta){
     Column{
@@ -95,9 +177,6 @@ fun TextoGenerico(texto: String){
     Text(text = texto)
 }
 
-
-
-
 @Composable
 fun saludoCard(cadena: String, datosCard: String){
     Box{
@@ -105,7 +184,8 @@ fun saludoCard(cadena: String, datosCard: String){
             Image(
                 painter = painterResource(id=R.drawable.dodoria),
                 contentDescription="Android Logo",
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier
+                    .padding(10.dp)
                     .size(100.dp)
                     .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.primary)
